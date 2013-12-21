@@ -13,11 +13,19 @@
 			<version>4.5</version>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.sf.feeling.swt</groupId>
+			<artifactId>win32-extension</artifactId>
+			<version>1.1.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/org.sf.feeling.swt.win32.extension_1.1.0.jar</systemPath>
+		</dependency>
 		
 		<dependency>
-		<groupId>org.eclipse.swt.win32.win32</groupId>
-		<artifactId>x86</artifactId>
-		<version>3.3.0-v3346</version>
+			<groupId>org.eclipse.swt.win32.win32</groupId>
+			<artifactId>x86</artifactId>
+			<version>3.3.0-v3346</version>
 		</dependency>
 	</dependencies>
 
@@ -40,8 +48,11 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>saku.MainFrame</mainClass>
+							<mainClass>recoil.MainTask</mainClass>
 						</manifest>
+						<manifestEntries>
+							<Class-path>org.sf.feeling.swt.win32.extension_1.1.0.jar</Class-path>
+						</manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
@@ -56,7 +67,8 @@
 				</configuration>
 			</plugin>
 
-			<!-- Launch4j Configuration : this may not work on 64 bit Java development platform -->
+			<!-- Launch4j Configuration : this may not work on 64 bit Java development 
+				platform -->
 			<plugin>
 				<groupId>com.akathist.maven.plugins.launch4j</groupId>
 				<artifactId>launch4j-maven-plugin</artifactId>
@@ -95,7 +107,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 		</plugins>
 	</build>
 	<groupId>recoil</groupId>
