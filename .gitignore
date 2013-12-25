@@ -3,4 +3,5 @@
 .settings
 .checkstyle
 .lock
+recoil.ini
 target
