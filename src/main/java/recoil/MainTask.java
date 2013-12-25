@@ -2,66 +2,101 @@ package recoil;
 
 import java.awt.AWTException;
 import java.awt.Image;
-import java.awt.Robot;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-
 import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
+import org.jnativehook.NativeHookException;
 
-import org.sf.feeling.swt.win32.extension.hook.Hook;
-import org.sf.feeling.swt.win32.extension.hook.data.HookData;
-import org.sf.feeling.swt.win32.extension.hook.data.KeyboardHookData;
-import org.sf.feeling.swt.win32.extension.hook.listener.HookEventListener;
+/**
+ * メインタスククラス
+ *
+ * @version 1.0
+ */
+public final class MainTask {
 
-public class MainTask {
+	/**
+	 * トレイアイコン
+	 */
+	private TrayIcon trayIcon;
+
+	/**
+	 * メインメソッド
+	 * 
+	 * @param args コマンドライン引数
+	 */
 	public static void main(String[] args) {
-		Image image;
+		new MainTask().setUp();	/* タスク実行 */
+	}
+
+	/**
+	 * アプリケーションを初期化する。
+	 */
+	private void setUp() {
+
 		try {
-			image = ImageIO.read(Thread.currentThread().getContextClassLoader()
-					.getResourceAsStream("Game.png"));
+			/* イメージアイコンの設定 */
+			Image image = ImageIO.read(Thread.currentThread()
+					.getContextClassLoader().getResourceAsStream("Game.png"));
 
-			TrayIcon icon = new TrayIcon(image);
-			icon.addActionListener(new ActionListener() {
+			/* トレイアイコンの設定 */
+			trayIcon = new TrayIcon(image);
+			final VirtualOperator vo = VirtualOperator.getInstance();
+			
+			/* ポップアップメニューハンドラ */
+			trayIcon.addActionListener(new ActionListener() {
 				@Override
-				public void actionPerformed(ActionEvent arg0) {
-					System.exit(0);
-
+				public void actionPerformed(ActionEvent e) {
+					new SettingDialog().setVisible(true);
 				}
 			});
 
-			final Robot r = new Robot();
+			/* ポップアップメニューの設定 */
+			PopupMenu popupMenu = new PopupMenu();
+			popupMenu.setLabel("Main");
 
-			Object o = new Object();
-			Hook.KEYBOARD.addListener(o, new HookEventListener() {
-
-				@Override
-				public void acceptHookData(HookData hookData) {
-					if (hookData != null) {
-						long vc =((KeyboardHookData) hookData).getVirtualKeyCode(); 
-						long sc =((KeyboardHookData) hookData).getScanCode(); 
-						System.out.println("VC="+ vc);
-						System.out.println("SC=" + sc);
-
-						if (vc == 81) {
-							
-							r.mouseMove(100, 100);
-						}
+			/* 設定メニュー */
+			MenuItem item0 = new MenuItem("Settings");
+			item0.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					vo.unregister();
+					new SettingDialog().setVisible(true);
+					try {
+						vo.register();
+					} catch (NativeHookException e1) {
+						JOptionPane.showConfirmDialog(null, e1.getMessage(), "FATAL ERROR", JOptionPane.ERROR_MESSAGE);
+						e1.printStackTrace();
 					}
 				}
 			});
+			popupMenu.add(item0);
 
-			Hook.KEYBOARD.install(o);
-			SystemTray.getSystemTray().add(icon);
-			// Hook.KEYBOARD.uninstall(o);
+			/* 終了メニュー */
+			MenuItem item1 = new MenuItem("Exit");
+			item1.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					System.exit(0);
+				}
+			});
+			
+			popupMenu.add(item1);
 
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (AWTException e) {
+			/* 仮想デバイスオペレータを登録 */
+			vo.init();
+			vo.register();
+
+			/* タスクトレイに登録 */
+			trayIcon.setPopupMenu(popupMenu);
+
+			SystemTray.getSystemTray().add(trayIcon);
+		} catch (IOException | NativeHookException | AWTException e) {
+			JOptionPane.showConfirmDialog(null, e.getMessage(), "FATAL ERROR", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
-
 	}
 }
